@@ -17,8 +17,8 @@
             />   
         </el-row>
 
-        <el-row :span="24">
-            <Item/>
+        <el-row :span="24" v-for="item in items" :key="item.id">
+            <Item :item="item"/>
         </el-row>
     </div>
 </template>
@@ -34,7 +34,7 @@ export default {
     },
     data() {
         return {
-            
+            items:[]
         };
     },
     computed:{
@@ -54,13 +54,13 @@ export default {
         id:{
             handler(newVal,oldVal){
                 console.log(newVal,oldVal)
-                const  global =getCurrentInstance()
-                global.appContext.config.globalProperties.$http.get('/getListsByID',{
+                this.$http.get('/getListsByID',{
                     params:{
                         'id':newVal
                     }
                 }).then(res=>{
-                    this.todos=res.data
+                    console.log('此次text的值为：',res.data)
+                    this.items=res.data
                 })
             },
             immediate:true
