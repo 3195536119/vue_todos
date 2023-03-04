@@ -1,10 +1,20 @@
+
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
   <router-view/>
 </template>
+
+<script>
+//---------------------------------问题1，es6模块化的问题，什么时候加大括号什么时候不加
+
+  import  Layout from "./components/layout.vue";
+  export default{
+    name: "app",
+    components: {
+        Layout
+    },
+    
+}
+</script>
 
 <style>
 #app {
