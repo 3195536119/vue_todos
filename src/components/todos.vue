@@ -1,29 +1,27 @@
 <template>
-<el-menu class="el-menu-vertical-demo">
-    <el-menu-item v-for="todo in todos" :index="todo.id" @click="getLists(todo.id)">
-        <el-icon v-show="todo.locked?true:false">
-            <lock />
-        </el-icon>
-        {{todo.title}}
-        <span class='boderOut'>
-            <span class='boderInner'> {{todo.record.length}}</span>
-        </span>
-    </el-menu-item>
-    <el-menu-item @click="addTodo">
-        <el-icon>
-            <Plus />
-        </el-icon>新增
-    </el-menu-item>
-</el-menu>
+    <el-menu class="el-menu-vertical-demo">
+        <el-menu-item v-for="todo in todos" :index="todo.id" @click="getLists(todo.id)">
+            <el-icon v-show="todo.locked ? true : false">
+                <lock />
+            </el-icon>
+            {{ todo.title }}
+            <span class='boderOut'>
+                <span class='boderInner'> {{ todo.count }}</span>
+            </span>
+        </el-menu-item>
+        <el-menu-item @click="addTodo">
+            <el-icon>
+                <Plus />
+            </el-icon>新增
+        </el-menu-item>
+    </el-menu>
 </template>
 
 <script>
 import {
-    ElMessageBox
+    ElMessageBox,
+    ElMessage
 } from "element-plus";
-import {
-    nanoid
-} from "nanoid";
 export default {
     name: 'Todos',
 
@@ -38,35 +36,45 @@ export default {
          *-----------------------------问题2此处的常量，为什么写的时候要用大括号括起来
          * 此处的目的是对象的解构
          */
-        this.$http.get('/msgs').then(res => {
-            console.log(res.data)
-            this.todos = res.data
-        })
+        this.getTodos()
     },
 
     methods: {
+        getTodos(){
+            this.$http.get('/getTodos').then(res => {
+            console.log(res.data)
+            this.$store.commit('setTodos', res.data)
+            this.todos = this.$store.getters.getTodos
+            console.log(this.todos)
+        })
+        },
         getLists(id) {
-            console.log('左菜单点击了', id)
             this.$router.push(`/lists?id=${id}`)
         },
         addTodo() {
             ElMessageBox.prompt('请输入代办事项名称', 'Tip', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                })
-                .then(obj => {
-                    console.log(obj.value)
-                    this.todos.push({
-                        'id': nanoid(),
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+            })
+            .then(obj => {
+                this.$http.get('/addTodo',{
+                    params:{
                         'title': obj.value,
-                        'isDeleted': false,
-                        'locked': false,
-                        'record': []
-                    })
-                    console.log(this.todos)
-                }).catch(() => {
-
+                    }
+                }).then(res=>{
+                    console.log(res)
+                    if(res.status==200){
+                        ElMessage({
+                            message:'添加成功',
+                            type:"success",
+                            showClose:true
+                        })
+                        this.getTodos()
+                    }
                 })
+            }).catch(() => {
+
+            })
         }
     },
 };

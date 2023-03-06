@@ -213,14 +213,23 @@ let data=[
   }
 ]
 
+//用于将Get方式得到的Url进行分割，得到传递的参数
+function getParams(url){
+    let paramObj={};
+    let arr=url.slice(url.indexOf('?')+1).split('&');
+    arr.forEach(item=>{
+        let keyValueArr=item.split('=');
+        paramObj[keyValueArr[0]]=keyValueArr[1]
+    })
+    return paramObj
+}
 
-
-Mock.mock(/msgs/, 'get', () => { //三个参数。第一个：路径，第二个：请求方式post/get，第三个：回调，返回值
+Mock.mock(/getTodos/, 'get', () => { //三个参数。第一个：路径，第二个：请求方式post/get，第三个：回调，返回值
     return data
 })
 
-//根据ID获取record的接口
-Mock.mock(/getListsByID/, 'get', (param) => { //三个参数。第一个：路径，第二个：请求方式post/get，第三个：回调，返回值
+//根据ID获取单条代办项数据的接口
+Mock.mock(/getInfosByTodoID/, 'get', (param) => { //三个参数。第一个：路径，第二个：请求方式post/get，第三个：回调，返回值
   console.log(`getListsByID,params:`,param)
   let url=param.url
   let id=url.slice(url.indexOf('=')+1)
@@ -228,5 +237,37 @@ Mock.mock(/getListsByID/, 'get', (param) => { //三个参数。第一个：路�
   let filter=data.filter(d=>{
     return d.id==id
   })
-  return filter[0].record
+  return filter[0]
 })
+
+//添加一个todo
+Mock.mock(/addTodo/, 'get', (param) => { //三个参数。第一个：路径，第二个：请求方式post/get，第三个：回调，返回值
+    // console.log(param.body)
+    // let paramStr=param.body
+    // let title=paramStr.substring(paramStr.indexOf(':')+2,paramStr.length-2)
+    let title=getParams(param.url).title
+    console.log(title)
+    data.push({
+        'id': Mock.Random.guid(),
+        'title': title,
+        'isDeleted': false,
+        'locked': false,
+        'record': []
+    })
+})
+
+//修改todo的标题
+Mock.mock(/editTodoTitle/, 'get', (param) => { //三个参数。第一个：路径，第二个：请求方式post/get，第三个：回调，返回值
+    console.log(`editTodoTitle,params:`,param)
+    let url=param.url
+    console.log(url)
+    console.log(getParams(url))
+    let paramObj=getParams(url);
+    data.some(item=>{
+        if(item.id==paramObj.id){
+            item.title=paramObj.title
+        }
+    })
+    console.log(data)
+  })
+
