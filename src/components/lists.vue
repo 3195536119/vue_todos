@@ -23,11 +23,11 @@
         </el-row>
 
         <el-row>
-            <el-input v-model="inputItem" placeholder="Please input" />
+            <el-input v-model="inputItem" placeholder="请输入内容" @change="addItem"/>
         </el-row>
 
         <el-row :span="24" v-for="item in list.record" :key="item.id">
-            <Item :item="item" />
+            <Item :item="item" :todoID="id"/>
         </el-row>
     </div>
 </template>
@@ -46,20 +46,33 @@ export default {
     data() {
         return {
             list: [],
-            title: ''
+            title: '',
+            inputItem:''
         };
     },
     computed: {
         id() {
             return this.$route.query.id
         },
-        
+       
     },
 
     mounted() {
     },
 
     methods: {
+        //每次修改之后重新获取所有的值
+        getTodo(){
+            console.log('id的值为：',this.id)
+            return this.$http.get('/getInfosByTodoID', {
+                    params: {
+                        'id': this.id
+                    }
+                }).then(res => {
+                    console.log('此次text的值为：', res.data)
+                    this.list = res.data
+                })
+        },
         editTodoTitle() {
             this.$http.get('/editTodoTitle', {
                 params: {
@@ -85,7 +98,36 @@ export default {
             }).then(res=>{
                 if (res.status == 200) {
                     todoOptions.getTodos()
+                    this.getTodo()
                 }
+            })
+        },
+        //未完成
+        deleteTodo(){
+            this.$http.get('/deleteTodo',{
+                params:{
+                    id:this.id
+                }
+            }).then(res=>{
+
+            })
+        },
+        addItem(){
+            this.$http.get('/addItem',{
+                params:{
+                    todoID:this.id,
+                    itemText:this.inputItem
+                }
+            }).then(res=>{
+                if (res.status == 200) {
+                    ElMessage({
+                        message: '添加成功',
+                        type: "success",
+                        showClose: true
+                    })
+                }
+            }).then(res1=>{
+                this.getTodo()
             })
         }
     },
@@ -93,15 +135,8 @@ export default {
     watch: {
         id: {
             handler(newVal, oldVal) {
-                console.log(newVal, oldVal)
-                this.$http.get('/getInfosByTodoID', {
-                    params: {
-                        'id': newVal
-                    }
-                }).then(res => {
-                    console.log('此次text的值为：', res.data)
-                    this.list = res.data
-                    this.title = res.data.title
+                this.getTodo().then(res=>{
+                    this.title = this.list.title
                 })
             },
             immediate: true
