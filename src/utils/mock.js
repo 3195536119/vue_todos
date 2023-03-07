@@ -271,3 +271,18 @@ Mock.mock(/editTodoTitle/, 'get', (param) => { //三个参数。第一个：路�
     console.log(data)
   })
 
+  //修改todo锁定状态
+Mock.mock(/changeTodoLocked/, 'get', (param) => { //三个参数。第一个：路径，第二个：请求方式post/get，第三个：回调，返回值
+    console.log(`changeTodoLocked,params:`,param)
+    let url=param.url
+    console.log(url)
+    console.log(getParams(url))
+    let paramObj=getParams(url);
+    data.some(item=>{
+        if(item.id==paramObj.id){
+            item.locked=!item.locked
+        }
+    })
+    console.log(data)
+  })
+

@@ -22,32 +22,26 @@ import {
     ElMessageBox,
     ElMessage
 } from "element-plus";
+import todoOptions from '../../public/todos.js'
 export default {
     name: 'Todos',
 
     data() {
         return {
-            todos: []
+            // todos: []
         };
     },
 
     mounted() {
-        /**
-         *-----------------------------问题2此处的常量，为什么写的时候要用大括号括起来
-         * 此处的目的是对象的解构
-         */
-        this.getTodos()
+        todoOptions.getTodos()
+    },
+    computed: {
+        todos() {
+            return this.$store.getters.getTodos
+        }
     },
 
     methods: {
-        getTodos(){
-            this.$http.get('/getTodos').then(res => {
-            console.log(res.data)
-            this.$store.commit('setTodos', res.data)
-            this.todos = this.$store.getters.getTodos
-            console.log(this.todos)
-        })
-        },
         getLists(id) {
             this.$router.push(`/lists?id=${id}`)
         },
@@ -56,28 +50,32 @@ export default {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
             })
-            .then(obj => {
-                this.$http.get('/addTodo',{
-                    params:{
-                        'title': obj.value,
-                    }
-                }).then(res=>{
-                    console.log(res)
-                    if(res.status==200){
-                        ElMessage({
-                            message:'添加成功',
-                            type:"success",
-                            showClose:true
-                        })
-                        this.getTodos()
-                    }
-                })
-            }).catch(() => {
+                .then(obj => {
+                    this.$http.get('/addTodo', {
+                        params: {
+                            'title': obj.value,
+                        }
+                    }).then(res => {
+                        console.log(res)
+                        if (res.status == 200) {
+                            ElMessage({
+                                message: '添加成功',
+                                type: "success",
+                                showClose: true
+                            })
+                            //每次修改操作会先调用后台的接口，模拟数据库的修改，再将其中的数据放在store中
+                            todoOptions.getTodos()
+                        }
+                        // }).then(res=>{
 
-            })
+                        // })
+                    }).catch(() => {
+
+                    })
+                })
+            }
         }
-    },
-};
+    }
 </script>
 
 <style scoped>

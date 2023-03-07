@@ -1,91 +1,117 @@
 <template>
-    <div >
+    <div>
         <el-row class="rowHeader">
-            <el-col :span="18" >
-                <el-input v-model="title"  />
+            <el-col :span="18">
+                <el-input v-model="title" />
             </el-col>
             <el-col :span="2">
                 <el-button type="primary" @click="editTodoTitle()">确定</el-button>
-            </el-col>  
+            </el-col>
             <el-col :span="2">
-                <el-icon v-show="list.locked==true"><Lock /></el-icon>
-                <el-icon v-show="list.locked==false"><Unlock /></el-icon>
-            </el-col>   
+                <el-icon v-show="list.locked == true" @click="changeTodoLocked">
+                    <Lock />
+                </el-icon>
+                <el-icon v-show="list.locked == false" @click="changeTodoLocked">
+                    <Unlock />
+                </el-icon>
+            </el-col>
             <el-col :span="2">
-                <el-icon><Delete /></el-icon>
+                <el-icon>
+                    <Delete />
+                </el-icon>
             </el-col>
         </el-row>
 
         <el-row>
-            <el-input v-model="inputItem" 
-            placeholder="Please input" 
-            />   
+            <el-input v-model="inputItem" placeholder="Please input" />
         </el-row>
 
         <el-row :span="24" v-for="item in list.record" :key="item.id">
-            <Item :item="item"/>
+            <Item :item="item" />
         </el-row>
     </div>
 </template>
 
 <script>
-import  Item  from "./item.vue";
+import Item from "./item.vue";
+import {
+    ElMessage
+} from "element-plus";
+import todoOptions from "../../public/todos.js";
 export default {
     name: 'Lists',
-    components:{
+    components: {
         Item
     },
     data() {
         return {
-            list:[],
-            title:''
+            list: [],
+            title: ''
         };
     },
-    computed:{
-        id(){
+    computed: {
+        id() {
             return this.$route.query.id
-        }
+        },
+        
     },
 
     mounted() {
     },
 
     methods: {
-        editTodoTitle(){
-            this.$http.get('./editTodoTitle',{
+        editTodoTitle() {
+            this.$http.get('/editTodoTitle', {
+                params: {
+                    title: this.title,
+                    id: this.id
+                }
+            }).then(res => {
+                if (res.status == 200) {
+                    ElMessage({
+                        message: '修改成功',
+                        type: "success",
+                        showClose: true
+                    })
+                    todoOptions.getTodos()
+                }
+            })
+        },
+        changeTodoLocked(){
+            this.$http.get('/changeTodoLocked',{
                 params:{
-                    title:this.title,
                     id:this.id
                 }
             }).then(res=>{
-
+                if (res.status == 200) {
+                    todoOptions.getTodos()
+                }
             })
         }
     },
 
-    watch:{
-        id:{
-            handler(newVal,oldVal){
-                console.log(newVal,oldVal)
-                this.$http.get('/getInfosByTodoID',{
-                    params:{
-                        'id':newVal
+    watch: {
+        id: {
+            handler(newVal, oldVal) {
+                console.log(newVal, oldVal)
+                this.$http.get('/getInfosByTodoID', {
+                    params: {
+                        'id': newVal
                     }
-                }).then(res=>{
-                    console.log('此次text的值为：',res.data)
-                    this.list=res.data
-                    this.title=res.data.title
+                }).then(res => {
+                    console.log('此次text的值为：', res.data)
+                    this.list = res.data
+                    this.title = res.data.title
                 })
             },
-            immediate:true
+            immediate: true
         }
     }
 };
 </script>
 
 <style scoped>
-.rowHeader{
+.rowHeader {
     height: 40px;
     line-height: 40px;
-}
-</style>
+}</style>
